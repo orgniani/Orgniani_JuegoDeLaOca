@@ -1,7 +1,7 @@
 ﻿
 using System.Collections.Generic;
 
-public class GoBackward : Casillero
+public class GoBackward : BoardRule
 {
     private Dictionary<int, int> rules;
 
@@ -20,9 +20,9 @@ public class GoBackward : Casillero
         return rules.ContainsKey(posicionJugador);
     }
 
-    public override ResultadoDeTirada Accionar(int idJugador, int posicionJugador)
+    public override BoardRuleResult Accionar(int idJugador, int posicionJugador)
     {
         int nuevaPos = rules[posicionJugador];
-        return new ResultadoDeTirada(nuevaPos, false, false, "y retrocede al casillero " + nuevaPos);
+        return new BoardRuleResult(nuevaPos, false, false, "y retrocede al casillero " + nuevaPos);
     }
 }

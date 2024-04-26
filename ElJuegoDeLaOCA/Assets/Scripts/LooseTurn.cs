@@ -1,7 +1,7 @@
 ﻿
 using System.Linq;
 
-public class LooseTurn : Casillero
+public class LooseTurn : BoardRule
 {
     private int[] rules;
 
@@ -16,8 +16,8 @@ public class LooseTurn : Casillero
         return rules.ToList().Contains(posicionJugador);
     }
 
-    public override ResultadoDeTirada Accionar(int idJugador, int posicionJugador)
+    public override BoardRuleResult Accionar(int idJugador, int posicionJugador)
     {
-        return new ResultadoDeTirada(posicionJugador, idJugador == 1, idJugador == 2, "y pierde un turno");
+        return new BoardRuleResult(posicionJugador, idJugador == 1, idJugador == 2, "y pierde un turno");
     }
 }

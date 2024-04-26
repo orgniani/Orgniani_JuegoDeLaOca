@@ -21,7 +21,7 @@ public class Game : MonoBehaviour
     private int diceResult = 0;
     private bool waitingForDice = false;
 
-    private List<Casillero> tablero = new List<Casillero>();
+    private List<BoardRule> tablero = new List<BoardRule>();
 
     private void Start()
     {
@@ -41,7 +41,7 @@ public class Game : MonoBehaviour
         StartCoroutine(PlayTurn());
     }
 
-    public void Initialize(List<Casillero> tablero)
+    public void Initialize(List<BoardRule> tablero)
     {
         //TAREA USAR ESTE METODO EN VEZ DEL START
     }
@@ -124,20 +124,20 @@ public class Game : MonoBehaviour
 
     private int CheckWhatHappens(int idJugador, int posicionJugador)
     {
-        ResultadoDeTirada resultado = new ResultadoDeTirada(posicionJugador);
+        BoardRuleResult result = new BoardRuleResult(posicionJugador);
 
         foreach (var regla in tablero)
         {
             if (regla.EsCompatible(posicionJugador))
-                resultado = regla.Accionar(idJugador, posicionJugador);
+                result = regla.Accionar(idJugador, posicionJugador);
         }
 
-        pierdeTurno1 = pierdeTurno1 || resultado.jugador1PierdeTurno;
-        pierdeTurno2 = pierdeTurno2 || resultado.jugador2PierdeTurno;
+        pierdeTurno1 = pierdeTurno1 || result.jugador1PierdeTurno;
+        pierdeTurno2 = pierdeTurno2 || result.jugador2PierdeTurno;
 
-        labelWhatHappened.text += resultado.textoQuePaso;
+        labelWhatHappened.text += result.textWhatHappened;
 
-        return resultado.nuevoCasillero;
+        return result.newPosition;
     }
 
     public void OnDiceRoll()

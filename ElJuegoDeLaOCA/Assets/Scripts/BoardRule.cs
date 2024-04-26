@@ -1,13 +1,13 @@
 ﻿using System;
 
-public class Casillero
+public class BoardRule
 {
     public virtual bool EsCompatible(int posicionJugador)
     {
         throw new NotImplementedException();
     }
 
-    public virtual  ResultadoDeTirada Accionar(int idJugador, int posicionJugador)
+    public virtual BoardRuleResult Accionar(int idJugador, int posicionJugador)
     {
         throw new NotImplementedException();
     }

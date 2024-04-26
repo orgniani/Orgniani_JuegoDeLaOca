@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class GoForward : Casillero
+public class GoForward : BoardRule
 {
     private Dictionary<int, int> rules;
 
@@ -21,9 +21,9 @@ public class GoForward : Casillero
         return rules.ContainsKey(posicionJugador);
     }
 
-    public override ResultadoDeTirada Accionar(int idJugador, int posicionJugador)
+    public override BoardRuleResult Accionar(int idJugador, int posicionJugador)
     {
         int nuevaPos = rules[posicionJugador];
-        return new ResultadoDeTirada(nuevaPos, false, false, "y avanza al casillero " + nuevaPos);
+        return new BoardRuleResult(nuevaPos, false, false, "y avanza al casillero " + nuevaPos);
     }
 }
