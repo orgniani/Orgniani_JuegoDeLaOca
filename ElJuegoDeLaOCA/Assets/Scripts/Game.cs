@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -20,8 +21,15 @@ public class Game : MonoBehaviour
     private int diceResult = 0;
     private bool waitingForDice = false;
 
+    private List<Casillero> tablero = new List<Casillero>();
+
     private void Start()
     {
+        tablero.Add(new GoForward());
+        tablero.Add(new GoBackward());
+        tablero.Add(new LooseTurn());
+        tablero.Add(new ThrowAgain());
+
         labelCurrentPlayer.text = "";
         labelWhatHappened.text = "";
         labelDiceResult.text = "?";
@@ -33,7 +41,12 @@ public class Game : MonoBehaviour
         StartCoroutine(PlayTurn());
     }
 
-    private IEnumerator PlayTurn()
+    public void Initialize(List<Casillero> tablero)
+    {
+        //TAREA USAR ESTE METODO EN VEZ DEL START
+    }
+
+    private IEnumerator PlayTurn()  // ---> TAREA: Refactorear este método para que sea mas "clean code"
     {
         diceResult = 0;
         labelWhatHappened.text = "";
@@ -111,65 +124,20 @@ public class Game : MonoBehaviour
 
     private int CheckWhatHappens(int idJugador, int posicionJugador)
     {
-        int nuevoCasillero = posicionJugador;
+        ResultadoDeTirada resultado = new ResultadoDeTirada(posicionJugador);
 
-        if (posicionJugador == 2)
+        foreach (var regla in tablero)
         {
-            nuevoCasillero = 21;
-        }
-        else if (posicionJugador == 5 || posicionJugador == 18)
-        {
-            if (idJugador == 1)
-                pierdeTurno1 = true;
-            else
-                pierdeTurno2 = true;
-
-            labelWhatHappened.text += " y pierde un turno.";
-        }
-        else if (posicionJugador == 7)
-        {
-            nuevoCasillero = 11;
-        }
-        else if (posicionJugador == 12)
-        {
-            nuevoCasillero = 1;
-        }
-        else if (posicionJugador == 14)
-        {
-            nuevoCasillero = 29;
-        }
-        else if (posicionJugador == 22)
-        {
-            nuevoCasillero = 24;
-        }
-        else if (posicionJugador == 25)
-        {
-            nuevoCasillero = 9;
-        }
-        else if (posicionJugador == 30)
-        {
-            nuevoCasillero = 27;
-        }
-        else if (posicionJugador == 31)
-        {
-            if (idJugador == 1)
-                pierdeTurno2 = true;
-            else
-                pierdeTurno1 = true;
-
-            labelWhatHappened.text += " y tira de nuevo el dado.";
-        }
-        else if (posicionJugador == 33)
-        {
-            nuevoCasillero = 20;
+            if (regla.EsCompatible(posicionJugador))
+                resultado = regla.Accionar(idJugador, posicionJugador);
         }
 
-        if (nuevoCasillero > posicionJugador)
-            labelWhatHappened.text += " y avanza al casillero " + nuevoCasillero;
-        else if (nuevoCasillero < posicionJugador)
-            labelWhatHappened.text += " y retrocede al casillero " + nuevoCasillero;
+        pierdeTurno1 = pierdeTurno1 || resultado.jugador1PierdeTurno;
+        pierdeTurno2 = pierdeTurno2 || resultado.jugador2PierdeTurno;
 
-        return nuevoCasillero;
+        labelWhatHappened.text += resultado.textoQuePaso;
+
+        return resultado.nuevoCasillero;
     }
 
     public void OnDiceRoll()

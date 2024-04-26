@@ -8,7 +8,7 @@ public class Board : MonoBehaviour
 
     public void MovePlayerToCell(int player, int cell)
     {
-        if(player == 1)
+        if (player == 1)
         {
             Player1Token.SetParent(Cells[cell - 1]);
             Player1Token.localPosition = Vector2.zero;
@@ -20,3 +20,4 @@ public class Board : MonoBehaviour
         }
     }
 }
+
