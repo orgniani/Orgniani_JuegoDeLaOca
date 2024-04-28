@@ -5,24 +5,19 @@ public class GoBackward : BoardRule
 {
     private Dictionary<int, int> rules;
 
-    public GoBackward()
+    public GoBackward(Dictionary<int, int> newRules)
     {
-        //TAREA: RECIBIR EL DICCIONARO POR PARAMETRO ACA
-        rules = new Dictionary<int, int>();
-        rules.Add(12, 1);
-        rules.Add(25, 9);
-        rules.Add(30, 27);
-        rules.Add(33, 20);
+        rules = newRules;
     }
 
-    public override bool EsCompatible(int posicionJugador)
+    public override bool IsCompatible(int posicionJugador)
     {
         return rules.ContainsKey(posicionJugador);
     }
 
-    public override BoardRuleResult Accionar(int idJugador, int posicionJugador)
+    public override BoardRuleResult Act(int idJugador, int posicionJugador)
     {
         int nuevaPos = rules[posicionJugador];
-        return new BoardRuleResult(nuevaPos, false, false, "y retrocede al casillero " + nuevaPos);
+        return new BoardRuleResult(nuevaPos, false, false, " y retrocede al casillero " + nuevaPos);
     }
 }

@@ -2,7 +2,10 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
+    [Header("Cells")]
     [SerializeField] private Transform[] Cells;
+
+    [Header("Players")]
     [SerializeField] private Transform Player1Token;
     [SerializeField] private Transform Player2Token;
 

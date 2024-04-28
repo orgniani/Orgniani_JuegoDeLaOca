@@ -2,12 +2,12 @@
 
 public class BoardRule
 {
-    public virtual bool EsCompatible(int posicionJugador)
+    public virtual bool IsCompatible(int posicionJugador)
     {
         throw new NotImplementedException();
     }
 
-    public virtual BoardRuleResult Accionar(int idJugador, int posicionJugador)
+    public virtual BoardRuleResult Act(int idJugador, int posicionJugador)
     {
         throw new NotImplementedException();
     }

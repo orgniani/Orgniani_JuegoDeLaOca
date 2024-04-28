@@ -5,19 +5,18 @@ public class LooseTurn : BoardRule
 {
     private int[] rules;
 
-    public LooseTurn()
+    public LooseTurn(int[] newRules)
     {
-        //TAREA: RECIBIR EL ARRAY POR PARAMETRO ACA
-        rules = new int[]{5, 18};
+        rules = newRules;
     }
 
-    public override bool EsCompatible(int posicionJugador)
+    public override bool IsCompatible(int posicionJugador)
     {
         return rules.ToList().Contains(posicionJugador);
     }
 
-    public override BoardRuleResult Accionar(int idJugador, int posicionJugador)
+    public override BoardRuleResult Act(int idJugador, int posicionJugador)
     {
-        return new BoardRuleResult(posicionJugador, idJugador == 1, idJugador == 2, "y pierde un turno");
+        return new BoardRuleResult(posicionJugador, idJugador == 1, idJugador == 2, " y pierde un turno");
     }
 }

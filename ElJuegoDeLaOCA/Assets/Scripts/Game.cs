@@ -1,125 +1,143 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Game : MonoBehaviour
 {
+    [Header("Board")]
+    [SerializeField] private Board board;
+
+    [Header("Text")]
     [SerializeField] private TMP_Text labelCurrentPlayer;
     [SerializeField] private TMP_Text labelWhatHappened;
-    [SerializeField] private Board board;
     [SerializeField] private TMP_Text labelDiceResult;
 
-    private bool pierdeTurno1 = false;
-    private bool pierdeTurno2 = false;
-    private int posicionJugador1 = 1;
-    private int posicionJugador2 = 1;
-    private int turno = 1;
-    private bool done = false;
+    private bool looseTurn1 = false;
+    private bool looseTurn2 = false;
+
+    private int player1Position = 1;
+    private int player2Position = 1;
+
+    private int turn = 1;
+    private bool gameOver = false;
     
     private int diceResult = 0;
     private bool waitingForDice = false;
 
     private List<BoardRule> tablero = new List<BoardRule>();
 
-    private void Start()
+    public void Initialize(List<BoardRule> tablero)
     {
-        tablero.Add(new GoForward());
-        tablero.Add(new GoBackward());
-        tablero.Add(new LooseTurn());
-        tablero.Add(new ThrowAgain());
+        this.tablero = tablero;
 
         labelCurrentPlayer.text = "";
         labelWhatHappened.text = "";
-        labelDiceResult.text = "?";
+        labelDiceResult.text = "X";
 
-        posicionJugador1 = 1;
-        posicionJugador2 = 1;
-        turno = 1;
-        done = false;
+        player1Position = 1;
+        player2Position = 1;
+
+        turn = 1;
+        gameOver = false;
+
         StartCoroutine(PlayTurn());
     }
 
-    public void Initialize(List<BoardRule> tablero)
+    private IEnumerator PlayTurn()
     {
-        //TAREA USAR ESTE METODO EN VEZ DEL START
-    }
+        if (gameOver) yield break;
 
-    private IEnumerator PlayTurn()  // ---> TAREA: Refactorear este método para que sea mas "clean code"
-    {
         diceResult = 0;
         labelWhatHappened.text = "";
 
-        if (turno == 1)
+        int currentPlayerPosition = GetCurrentPlayerPosition();
+        int currentPlayerTurn = GetCurrentPlayerTurn();
+        bool currentPlayerLostTurn = GetCurrentPlayerLostTurn();
+
+        labelCurrentPlayer.text = turn.ToString();
+
+        if (currentPlayerLostTurn)
         {
-            labelCurrentPlayer.text = "1";
-            if (!pierdeTurno1)
-            {
-                waitingForDice = true;
-                while (diceResult == 0)
-                {
-                    yield return new WaitForEndOfFrame();
-                }
-                waitingForDice = false;
-                posicionJugador1 = Math.Min(36, posicionJugador1 + diceResult);
-                labelWhatHappened.text = "Sacó un " + diceResult.ToString() + " y se mueve al casillero nro " + posicionJugador1.ToString();
-                board.MovePlayerToCell(turno, posicionJugador1);
-                yield return new WaitForSeconds(1);
-
-                posicionJugador1 = CheckWhatHappens(1, posicionJugador1);
-                board.MovePlayerToCell(turno, posicionJugador1);
-            }
-            else
-            {
-                labelWhatHappened.text = "había perdido el turno - no juega";
-                pierdeTurno1 = false;
-            }
-
-            done = posicionJugador1 == 36;
-            turno = 2;
-        }
-        else //if (turno == 2)
-        {
-            labelCurrentPlayer.text = "2";
-            if (!pierdeTurno2)
-            {
-                waitingForDice = true;
-                while (diceResult == 0)
-                {
-                    yield return new WaitForEndOfFrame();
-                }
-                waitingForDice = false;
-                posicionJugador2 = Math.Min(36, posicionJugador2 + diceResult);
-                labelWhatHappened.text = "Sacó un " + diceResult.ToString() + " y se mueve al casillero nro " + posicionJugador2.ToString();
-                board.MovePlayerToCell(turno, posicionJugador2);
-                yield return new WaitForSeconds(1);
-
-                posicionJugador2 = CheckWhatHappens(2, posicionJugador2);
-                board.MovePlayerToCell(turno, posicionJugador2);
-            }
-            else
-            {
-                labelWhatHappened.text = "había perdido el turno - no juega";
-                pierdeTurno2 = false;
-            }
-
-            done = posicionJugador2 == 36;
-            turno = 1;
+            labelWhatHappened.text = "El jugador " + currentPlayerTurn + " había perdido el turno - no juega";
+            if (turn == 1) looseTurn1 = false;
+            else looseTurn2 = false;
         }
 
-        if (done)
-        {
-            if (posicionJugador1 == 36)
-                labelWhatHappened.text = "Gana el jugador 1 - fin del juego";
-            else
-                labelWhatHappened.text = "Gana el jugador 2 - fin del juego";
-        }
         else
         {
-            yield return new WaitForSeconds(2);
-            StartCoroutine(PlayTurn());
+            yield return WaitForDice();
+            MovePlayer(currentPlayerTurn, ref currentPlayerPosition);
+
+            yield return new WaitForSeconds(1);
+            MovePlayerAfterWhatHappens(currentPlayerTurn, ref currentPlayerPosition);
         }
+
+        UpdatePosition(currentPlayerPosition);
+
+        CheckIfGameOver(currentPlayerPosition, currentPlayerTurn);
+        turn = (turn == 1) ? 2 : 1;
+
+        yield return new WaitForSeconds(2);
+        StartCoroutine(PlayTurn());
+    }
+
+    private int GetCurrentPlayerPosition()
+    {
+        return (turn == 1) ? player1Position : player2Position;
+    }
+
+    private int GetCurrentPlayerTurn()
+    {
+        return (turn == 1) ? 1 : 2;
+    }
+
+    private bool GetCurrentPlayerLostTurn()
+    {
+        return (turn == 1) ? looseTurn1 : looseTurn2;
+    }
+
+    private void CheckIfGameOver(int currentPlayerPosition, int currentPlayerTurn)
+    {
+        gameOver = (currentPlayerPosition == 36);
+
+        if (!gameOver) return;
+        labelWhatHappened.text = $"Gana el jugador {((currentPlayerTurn == 1) ? 1 : 2)} - fin del juego";
+    }
+
+    private void MovePlayer(int currentPlayerTurn, ref int currentPlayerPosition)
+    {
+        currentPlayerPosition = Math.Min(36, currentPlayerPosition + diceResult);
+
+        labelWhatHappened.text = "Sacó un " + diceResult.ToString() + " y se mueve al casillero nro " + currentPlayerPosition.ToString();
+        board.MovePlayerToCell(currentPlayerTurn, currentPlayerPosition);
+    }
+
+    private void MovePlayerAfterWhatHappens(int currentPlayerTurn, ref int currentPlayerPosition)
+    {
+        currentPlayerPosition = CheckWhatHappens(currentPlayerTurn, currentPlayerPosition);
+        board.MovePlayerToCell(currentPlayerTurn, currentPlayerPosition);
+    }
+
+    private void UpdatePosition(int currentPlayerPosition)
+    {
+        if (turn == 1) player1Position = currentPlayerPosition;
+        else player2Position = currentPlayerPosition;
+    }
+
+    private IEnumerator WaitForDice()
+    {
+        waitingForDice = true;
+
+        while (diceResult == 0)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+
+        waitingForDice = false;
     }
 
     private int CheckWhatHappens(int idJugador, int posicionJugador)
@@ -128,12 +146,12 @@ public class Game : MonoBehaviour
 
         foreach (var regla in tablero)
         {
-            if (regla.EsCompatible(posicionJugador))
-                result = regla.Accionar(idJugador, posicionJugador);
+            if (regla.IsCompatible(posicionJugador))
+                result = regla.Act(idJugador, posicionJugador);
         }
 
-        pierdeTurno1 = pierdeTurno1 || result.jugador1PierdeTurno;
-        pierdeTurno2 = pierdeTurno2 || result.jugador2PierdeTurno;
+        looseTurn1 = looseTurn1 || result.jugador1PierdeTurno;
+        looseTurn2 = looseTurn2 || result.jugador2PierdeTurno;
 
         labelWhatHappened.text += result.textWhatHappened;
 

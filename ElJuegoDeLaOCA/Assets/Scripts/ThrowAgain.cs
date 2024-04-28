@@ -5,19 +5,18 @@ public class ThrowAgain : BoardRule
 {
     private int[] rules;
 
-    public ThrowAgain()
+    public ThrowAgain(int[] newRules)
     {
-        //TAREA: RECIBIR EL ARRAY POR PARAMETRO ACA
-        rules = new int[] { 31 };
+        rules = newRules;
     }
 
-    public override bool EsCompatible(int posicionJugador)
+    public override bool IsCompatible(int posicionJugador)
     {
         return rules.ToList().Contains(posicionJugador);
     }
 
-    public override BoardRuleResult Accionar(int idJugador, int posicionJugador)
+    public override BoardRuleResult Act(int idJugador, int posicionJugador)
     {
-        return new BoardRuleResult(posicionJugador, idJugador == 2, idJugador == 1, "y tira de nuevo");
+        return new BoardRuleResult(posicionJugador, idJugador == 2, idJugador == 1, " y tira de nuevo");
     }
 }
